@@ -347,7 +347,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         await carregarPlantas();
       } catch (err) {
         console.error("Erro ao salvar planta:", err);
-        alert("Erro ao salvar planta no banco: " + err.message);
+        alert("Erro ao salvar planta no banco, você está offline: " + err.message);
       } finally {
         if (ppBtnSubmit) {
           ppBtnSubmit.disabled = false;
@@ -375,7 +375,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           await carregarPlantas();
         } catch (err) {
           console.error("Erro ao excluir:", err);
-          alert("Erro ao excluir planta: " + err.message);
+          alert("Erro ao excluir planta, você está offline: " + err.message);
         }
       }
     };
