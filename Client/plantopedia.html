@@ -63,8 +63,9 @@
       href="assets/icons/IconTransparente.ico"
       type="image/x-icon"
     />
-    <link rel="stylesheet" href="assets/css/style.css" />
-    <link rel="stylesheet" href="assets/css/animations.css" />
+   
+    <link rel="stylesheet" href="assets/css/style.min.css">
+    <link rel="stylesheet" href="assets/css/animations.min.css">
     <link rel="stylesheet" href="assets/css/pages/plantopedia.css" />
     <link rel="manifest" href="./manifest.json" />
     <link rel="apple-touch-icon" href="./assets/icons/apple-touch-icon.png" />
@@ -89,9 +90,11 @@
         <div class="logo-container">
           <a href="hub.html">
             <img
-              src="assets/images/bannerAHMA.png"
+              src="assets/images/bannerAHMA.webp"
               alt="Logo A.H.M.A"
               class="banner-img"
+              loading="lazy"
+              decoding="async"
             />
           </a>
         </div>
@@ -245,6 +248,6 @@
     </div>
 
     <script src="src/components/menu-hamburger.js"></script>
-    <script type="module" src="src/pages/plantopedia.js"></script>
+    <script type="module" src="src/pages/plantopedia.min.js"></script>
   </body>
 </html>

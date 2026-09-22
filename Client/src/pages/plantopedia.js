@@ -1,3 +1,4 @@
+import { PlantService } from "../services/plant-service.js";
 import { _supabase } from "../config/supabase.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -31,17 +32,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   let listaCategorias = [];
   let plantaSelecionadaId = null;
   let fotoBase64 = null;
-  let nivelAcessoUsuario = "USER"; // Padrão seguro
+  let arquivoFotoSelecionado = null;
+  let nivelAcessoUsuario = "USER";
 
-  // Duração do fechamento animado dos modais — precisa bater com
-  // a transition de .pp-modal-overlay / .pp-modal em animations.css
   const DURACAO_FECHAR_MODAL = 320;
 
-  // ---------- Helpers genéricos de abrir/fechar modal com transição ----------
   function abrirModal(overlay) {
     overlay.removeAttribute("hidden");
-    // força reflow antes de adicionar a classe, senão o navegador
-    // não anima a transição (ela "já nasceria" no estado final)
     void overlay.offsetWidth;
     overlay.classList.add("ahma-aberto");
   }
@@ -54,11 +51,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     }, DURACAO_FECHAR_MODAL);
   }
 
-  // CONFIGURAÇÃO DO BOTÃO VOLTAR
   if (btnVoltar) {
     btnVoltar.addEventListener("click", (e) => {
       e.preventDefault();
-      if (document.referrer && document.referrer.includes(window.location.host)) {
+      if (
+        document.referrer &&
+        document.referrer.includes(window.location.host)
+      ) {
         window.history.back();
       } else {
         window.location.href = "hub.html";
@@ -66,7 +65,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // 1. VERIFICAR NÍVEL DE ACESSO DO USUÁRIO
   async function verificarNivelAcesso() {
     try {
       const {
@@ -86,13 +84,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         nivelAcessoUsuario = String(data.nivel_acesso).trim().toUpperCase();
       }
 
-      // Permite acesso de edição para TI e AGRO
       const isAdmin =
         nivelAcessoUsuario === "TI" || nivelAcessoUsuario === "AGRO";
 
       if (ppBtnAdd) {
         if (isAdmin) {
-          ppBtnAdd.style.display = ""; // Restaura a exibição padrão do CSS sem quebrar a tela
+          ppBtnAdd.style.display = "";
           ppBtnAdd.removeAttribute("hidden");
         } else {
           ppBtnAdd.style.display = "none";
@@ -103,16 +100,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  // 2. CARREGAR CATEGORIAS NO SELECT
   async function carregarCategorias() {
     try {
-      const { data, error } = await _supabase
-        .from("categoria_especimes")
-        .select("*")
-        .order("nome_categoria", { ascending: true });
-
-      if (error) throw error;
-
+      const data = await PlantService.listarCategorias();
       listaCategorias = data || [];
 
       if (ppCategorySelect) {
@@ -129,11 +119,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  // 3. PREVIEW DA FOTO
   if (ppPhotoInput) {
     ppPhotoInput.onchange = (e) => {
       const file = e.target.files[0];
       if (!file) return;
+
+      arquivoFotoSelecionado = file; // <- Adicionar esta linha
 
       const reader = new FileReader();
       reader.onload = (event) => {
@@ -149,6 +140,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   function resetarFormulario() {
     ppForm.reset();
     fotoBase64 = null;
+    arquivoFotoSelecionado = null;
     if (ppPhotoPreview) {
       ppPhotoPreview.src = "";
       ppPhotoPreview.setAttribute("hidden", "true");
@@ -158,7 +150,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  // 4. CONTROLE DOS MODAIS
   if (ppBtnAdd) {
     ppBtnAdd.onclick = () => {
       if (nivelAcessoUsuario === "USER") {
@@ -180,38 +171,31 @@ document.addEventListener("DOMContentLoaded", async () => {
   const fecharModalDetalhes = () => fecharModal(ppDetailOverlay);
   if (ppDetailClose) ppDetailClose.onclick = fecharModalDetalhes;
 
-  // 5. CARREGAR PLANTAS
+  // 5. CARREGAR PLANTAS COM CACHE INSTANTÂNEO + ATUALIZAÇÃO EM SEGUNDO PLANO
   async function carregarPlantas() {
     try {
-      const { data, error } = await _supabase
-        .from("especimes")
-        .select(
-          `
-          id_planta,
-          nome_popular,
-          nome_cientifico,
-          informacoes_adicionais,
-          foto_url,
-          id_categoria,
-          categoria_especimes ( nome_categoria )
-        `,
-        )
-        .order("id_planta", { ascending: false });
+      const data = await PlantService.listarPlantas((plantasDoCache) => {
+        // Exibe o cache na tela imediatamente se ele existir
+        listaPlantas = plantasDoCache;
+        renderizarPlantas(listaPlantas);
+        console.log("⚡ Plantopédia exibida instantaneamente via cache local.");
+      });
 
-      if (error) throw error;
-
+      // Atualiza a tela com os dados atualizados do Supabase
       listaPlantas = data || [];
       renderizarPlantas(listaPlantas);
+      console.log("🔄 Plantopédia sincronizada com o Supabase.");
     } catch (err) {
       console.error("Erro ao carregar plantas:", err);
-      ppGrid.innerHTML = "";
-      ppEmpty.hidden = false;
-      ppEmpty.textContent =
-        "Nenhuma planta encontrada. Que tal adicionar a primeira?";
+      if (listaPlantas.length === 0) {
+        ppGrid.innerHTML = "";
+        ppEmpty.hidden = false;
+        ppEmpty.textContent =
+          "Nenhuma planta encontrada. Que tal adicionar a primeira?";
+      }
     }
   }
 
-  // 6. RENDERIZAR CARDS (com índice para animação em cascata)
   function renderizarPlantas(plantas) {
     ppGrid.innerHTML = "";
 
@@ -225,13 +209,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     plantas.forEach((planta, indice) => {
       const card = document.createElement("article");
       card.className = "pp-card";
-      // usado pelo CSS (animation-delay: calc(var(--i) * 45ms)) para
-      // escalonar a entrada dos cards, sem depender de nth-child
       card.style.setProperty("--i", indice);
 
+      // Renderiza a imagem envolvida por um wrapper com transição suave
       const fotoHtml = planta.foto_url
-        ? `<img src="${planta.foto_url}" alt="${planta.nome_popular}">`
-        : "🌱";
+        ? `<div class="pp-photo-wrapper">
+             <img src="${planta.foto_url}" 
+                  alt="${planta.nome_popular}" 
+                  loading="lazy"
+                  class="pp-img-loading"
+                  onload="this.classList.add('pp-img-loaded')">
+           </div>`
+        : `<div class="pp-photo-placeholder">🌱</div>`;
 
       const nomeCategoria =
         planta.categoria_especimes?.nome_categoria || "Geral";
@@ -252,7 +241,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // 7. BUSCA
   if (ppSearch) {
     ppSearch.oninput = (e) => {
       const termo = e.target.value.toLowerCase().trim();
@@ -266,7 +254,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
   }
 
-  // 8. EXIBIR DETALHES E TRATAR VISIBILIDADE DE BOTÕES RESTREITOS
   function abrirDetalhes(planta) {
     plantaSelecionadaId = planta.id_planta;
     document.getElementById("ppDetailName").textContent =
@@ -291,7 +278,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (placeholderDetail) placeholderDetail.hidden = false;
     }
 
-    // Oculta/Exibe o botão de exclusão com base na permissão
     if (ppDetailDelete) {
       if (nivelAcessoUsuario === "USER") {
         ppDetailDelete.style.display = "none";
@@ -303,7 +289,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     abrirModal(ppDetailOverlay);
   }
 
-  // 9. SALVAR PLANTA
   if (ppForm) {
     ppForm.onsubmit = async (e) => {
       e.preventDefault();
@@ -336,23 +321,33 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
       try {
+        // --- INÍCIO DA ALTERAÇÃO (Upload para o Storage) ---
+        let foto_url = null;
+
+        // Se o usuário selecionou uma foto pelo input de arquivo, faz o upload para o bucket
+        if (arquivoFotoSelecionado) {
+          foto_url = await PlantService.enviarFoto(arquivoFotoSelecionado);
+        } else if (fotoBase64) {
+          // Fallback caso ainda haja algo no fotoBase64
+          foto_url = fotoBase64;
+        }
+
         const payload = {
           nome_popular,
           nome_cientifico: nome_cientifico || null,
           id_categoria,
           informacoes_adicionais: informacoes_adicionais || null,
-          foto_url: fotoBase64 || null,
+          foto_url: foto_url, // Guarda a URL do Supabase Storage
         };
 
-        const { error } = await _supabase.from("especimes").insert([payload]);
-
-        if (error) throw error;
+        await PlantService.adicionaPlanta(payload);
+        // --- FIM DA ALTERAÇÃO ---
 
         fecharModalCadastro();
         await carregarPlantas();
       } catch (err) {
         console.error("Erro ao salvar planta:", err);
-        alert("Erro ao salvar planta no banco: " + err.message);
+        alert("Erro ao salvar planta no banco, você está offline: " + err.message);
       } finally {
         if (ppBtnSubmit) {
           ppBtnSubmit.disabled = false;
@@ -363,7 +358,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
   }
 
-  // 10. EXCLUIR PLANTA
   if (ppDetailDelete) {
     ppDetailDelete.onclick = async () => {
       if (nivelAcessoUsuario === "USER") {
@@ -375,18 +369,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       if (confirm("Tem certeza que deseja excluir esta planta?")) {
         try {
-          const { error } = await _supabase
-            .from("especimes")
-            .delete()
-            .eq("id_planta", plantaSelecionadaId);
-
-          if (error) throw error;
+          await PlantService.deletarPlanta(plantaSelecionadaId);
 
           fecharModalDetalhes();
           await carregarPlantas();
         } catch (err) {
           console.error("Erro ao excluir:", err);
-          alert("Erro ao excluir planta: " + err.message);
+          alert("Erro ao excluir planta, você está offline: " + err.message);
         }
       }
     };
@@ -396,4 +385,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   await verificarNivelAcesso();
   await carregarCategorias();
   await carregarPlantas();
+
+  // ATUALIZAÇÃO PERIÓDICA AUTOMÁTICA EM SEGUNDO PLANO (A cada 30 segundos)
+  setInterval(() => {
+    carregarPlantas();
+  }, 30000);
 });

@@ -56,11 +56,12 @@
       href="assets/icons/IconTransparente.ico"
       type="image/x-icon"
     />
-    <link rel="stylesheet" href="assets/css/style.css" />
-    <link rel="stylesheet" href="assets/css/animations.css" />
+
+    <link rel="stylesheet" href="assets/css/style.min.css">
+    <link rel="stylesheet" href="assets/css/animations.min.css">
     <link rel="manifest" href="./manifest.json" />
     <link rel="apple-touch-icon" href="./assets/icons/apple-touch-icon.png" />
-    <link rel="stylesheet" href="style.css" />
+    
   </head>
   <body>
     <aside class="sidebar" id="sidebar">
@@ -82,9 +83,11 @@
         <div class="logo-container">
           <a href="hub.html"
             ><img
-              src="assets/images/bannerAHMA.png"
+              src="assets/images/bannerAHMA.webp"
               alt="Logo A.H.M.A"
               class="banner-img"
+              loading="lazy"
+              decoding="async"
           /></a>
         </div>
 
@@ -110,7 +113,11 @@
                 </p>
               </div>
               <div class="box-image">
-                <img src="assets/images/Planta 1.jpg" alt="Foto-horta" />
+                <img 
+                src="assets/images/Planta 1.webp" alt="Foto-horta"
+                loading="lazy"
+                decoding="async"
+                />
               </div>
             </article>
           </a>
@@ -125,8 +132,10 @@
               </div>
               <div class="box-image">
                 <img
-                  src="assets/images/Planta 4.jpg"
+                  src="assets/images/Planta 4.webp"
                   alt="diversidade_plantas"
+                  loading="lazy"
+                  decoding="async"
                 />
               </div>
             </article>
