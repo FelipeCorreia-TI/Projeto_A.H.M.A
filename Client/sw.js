@@ -9,7 +9,8 @@ const ASSETS_TO_CACHE = [
   "./sensores.html",
   "./manifest.json",
 
-  "./src/services/plant-service.js",
+  "./src/services/plant-service.min.js",
+  "./src/pages/plantopedia.min.js",
 
   "./assets/css/base/reset.css",
   "./assets/css/base/typography.css",
