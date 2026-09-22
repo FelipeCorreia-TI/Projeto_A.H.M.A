@@ -118,6 +118,8 @@
     margin: 4px 0;
     font-size: 1.02rem;
     color: var(--color-primary);
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 .pp-card-body p {
@@ -128,6 +130,8 @@
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 .pp-badge {
@@ -320,13 +324,25 @@
     font-style: italic;
     color: var(--color-text-lighter);
     margin: 2px 0 8px;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
+.pp-detail h3 {
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+/* Correção: impede que texto longo (palavras/links sem espaço) estoure
+   a largura do modal, mantendo a quebra de linha digitada pelo usuário
+   (\n do textarea) graças ao white-space: pre-wrap. */
 .pp-detail-info {
     text-align: left;
     color: var(--color-text);
     margin-top: 12px;
     white-space: pre-wrap;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 /* Ações restritas para ADM TI / ADM AGRO */
@@ -353,11 +369,48 @@
   color: var(--color-white);
 }
 
+.btn-editar:hover {
+  background-color: var(--color-primary-hover);
+}
+
 .btn-excluir {
   background-color: var(--color-danger);
   color: var(--color-white);
 }
 
+<<<<<<< Updated upstream
+=======
+.btn-excluir:hover {
+  background-color: var(--color-danger-bg-hover);
+}
+
+/* Wrapper com fundo suave em degradê enquanto a foto carrega */
+.pp-photo-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Esconde a imagem inicialmente e ativa a transição */
+.pp-img-loading {
+  opacity: 0;
+  transition: opacity 0.4s ease-in-out;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Quando o navegador encerra o download da imagem, faz o fade-in */
+.pp-img-loaded {
+  opacity: 1;
+}
+
+>>>>>>> Stashed changes
 @media (min-width: 768px) {
     .pp-grid {
         grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));

@@ -16,6 +16,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const ppForm = document.getElementById("ppForm");
   const ppBtnSubmit = document.getElementById("ppBtnSubmit");
   const ppCategorySelect = document.getElementById("ppCategory");
+  const ppFormTitle = document.getElementById("ppFormTitle");
 
   // Upload e preview
   const ppPhotoInput = document.getElementById("ppPhotoInput");
@@ -26,15 +27,26 @@ document.addEventListener("DOMContentLoaded", async () => {
   const ppDetailOverlay = document.getElementById("ppDetailOverlay");
   const ppDetailClose = document.getElementById("ppDetailClose");
   const ppDetailDelete = document.getElementById("ppDetailDelete");
+  const ppDetailEdit = document.getElementById("ppDetailEdit");
+  const ppDetailAdminActions = document.getElementById("ppDetailAdminActions");
 
   let listaPlantas = [];
   let listaCategorias = [];
   let plantaSelecionadaId = null;
+  let plantaSelecionada = null;
   let fotoBase64 = null;
   let nivelAcessoUsuario = "USER"; // Padrão seguro
 
+<<<<<<< Updated upstream
   // Duração do fechamento animado dos modais — precisa bater com
   // a transition de .pp-modal-overlay / .pp-modal em animations.css
+=======
+  // Estado de edição
+  let modoEdicao = false;
+  let plantaEmEdicaoId = null;
+  let fotoUrlOriginal = null;
+
+>>>>>>> Stashed changes
   const DURACAO_FECHAR_MODAL = 320;
 
   // ---------- Helpers genéricos de abrir/fechar modal com transição ----------
@@ -135,6 +147,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       const file = e.target.files[0];
       if (!file) return;
 
+<<<<<<< Updated upstream
+=======
+      arquivoFotoSelecionado = file;
+
+>>>>>>> Stashed changes
       const reader = new FileReader();
       reader.onload = (event) => {
         fotoBase64 = event.target.result;
@@ -149,6 +166,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   function resetarFormulario() {
     ppForm.reset();
     fotoBase64 = null;
+<<<<<<< Updated upstream
+=======
+    arquivoFotoSelecionado = null;
+    modoEdicao = false;
+    plantaEmEdicaoId = null;
+    fotoUrlOriginal = null;
+
+    if (ppFormTitle) ppFormTitle.textContent = "Adicionar planta";
+    if (ppBtnSubmit) ppBtnSubmit.textContent = "Salvar planta";
+
+>>>>>>> Stashed changes
     if (ppPhotoPreview) {
       ppPhotoPreview.src = "";
       ppPhotoPreview.setAttribute("hidden", "true");
@@ -269,6 +297,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   // 8. EXIBIR DETALHES E TRATAR VISIBILIDADE DE BOTÕES RESTREITOS
   function abrirDetalhes(planta) {
     plantaSelecionadaId = planta.id_planta;
+    plantaSelecionada = planta;
+
     document.getElementById("ppDetailName").textContent =
       planta.nome_popular || "";
     document.getElementById("ppDetailScientific").textContent =
@@ -291,6 +321,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (placeholderDetail) placeholderDetail.hidden = false;
     }
 
+<<<<<<< Updated upstream
     // Oculta/Exibe o botão de exclusão com base na permissão
     if (ppDetailDelete) {
       if (nivelAcessoUsuario === "USER") {
@@ -298,12 +329,65 @@ document.addEventListener("DOMContentLoaded", async () => {
       } else {
         ppDetailDelete.style.display = "block";
       }
+=======
+    if (ppDetailAdminActions) {
+      ppDetailAdminActions.style.display =
+        nivelAcessoUsuario === "USER" ? "none" : "flex";
+>>>>>>> Stashed changes
     }
 
     abrirModal(ppDetailOverlay);
   }
 
+<<<<<<< Updated upstream
   // 9. SALVAR PLANTA
+=======
+  function abrirEdicao(planta) {
+    modoEdicao = true;
+    plantaEmEdicaoId = planta.id_planta;
+    fotoUrlOriginal = planta.foto_url || null;
+
+    document.getElementById("ppName").value = planta.nome_popular || "";
+    document.getElementById("ppScientific").value =
+      planta.nome_cientifico || "";
+    document.getElementById("ppInfo").value =
+      planta.informacoes_adicionais || "";
+
+    if (ppCategorySelect && planta.id_categoria) {
+      ppCategorySelect.value = planta.id_categoria;
+    }
+
+    if (planta.foto_url) {
+      ppPhotoPreview.src = planta.foto_url;
+      ppPhotoPreview.removeAttribute("hidden");
+      if (ppPhotoPlaceholder) ppPhotoPlaceholder.style.display = "none";
+    } else {
+      ppPhotoPreview.src = "";
+      ppPhotoPreview.setAttribute("hidden", "true");
+      if (ppPhotoPlaceholder) ppPhotoPlaceholder.style.display = "block";
+    }
+
+    fotoBase64 = null;
+    arquivoFotoSelecionado = null;
+
+    if (ppFormTitle) ppFormTitle.textContent = "Editar planta";
+    if (ppBtnSubmit) ppBtnSubmit.textContent = "Salvar alterações";
+
+    fecharModal(ppDetailOverlay, () => abrirModal(ppFormOverlay));
+  }
+
+  if (ppDetailEdit) {
+    ppDetailEdit.onclick = () => {
+      if (nivelAcessoUsuario === "USER") {
+        alert("Ação não permitida para seu nível de acesso.");
+        return;
+      }
+      if (!plantaSelecionada) return;
+      abrirEdicao(plantaSelecionada);
+    };
+  }
+
+>>>>>>> Stashed changes
   if (ppForm) {
     ppForm.onsubmit = async (e) => {
       e.preventDefault();
@@ -331,22 +415,52 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       if (ppBtnSubmit) {
         ppBtnSubmit.disabled = true;
-        ppBtnSubmit.textContent = "Salvando...";
+        ppBtnSubmit.textContent = modoEdicao
+          ? "Salvando alterações..."
+          : "Salvando...";
         ppBtnSubmit.classList.add("ahma-carregando");
       }
 
       try {
+<<<<<<< Updated upstream
+=======
+        // Mantém a foto original se estiver editando e nenhuma nova foi escolhida
+        let foto_url = modoEdicao ? fotoUrlOriginal : null;
+
+        if (arquivoFotoSelecionado) {
+          foto_url = await PlantService.enviarFoto(arquivoFotoSelecionado);
+        } else if (fotoBase64 && !modoEdicao) {
+          foto_url = fotoBase64;
+        }
+
+>>>>>>> Stashed changes
         const payload = {
           nome_popular,
           nome_cientifico: nome_cientifico || null,
           id_categoria,
           informacoes_adicionais: informacoes_adicionais || null,
+<<<<<<< Updated upstream
           foto_url: fotoBase64 || null,
         };
 
         const { error } = await _supabase.from("especimes").insert([payload]);
 
         if (error) throw error;
+=======
+          foto_url,
+        };
+
+        if (modoEdicao && plantaEmEdicaoId) {
+          const { error } = await _supabase
+            .from("plantas")
+            .update(payload)
+            .eq("id_planta", plantaEmEdicaoId);
+
+          if (error) throw error;
+        } else {
+          await PlantService.adicionaPlanta(payload);
+        }
+>>>>>>> Stashed changes
 
         fecharModalCadastro();
         await carregarPlantas();
@@ -356,7 +470,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       } finally {
         if (ppBtnSubmit) {
           ppBtnSubmit.disabled = false;
-          ppBtnSubmit.textContent = "Salvar planta";
+          ppBtnSubmit.textContent = modoEdicao
+            ? "Salvar alterações"
+            : "Salvar planta";
           ppBtnSubmit.classList.remove("ahma-carregando");
         }
       }
@@ -396,4 +512,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   await verificarNivelAcesso();
   await carregarCategorias();
   await carregarPlantas();
+<<<<<<< Updated upstream
+=======
+
+  // ATUALIZAÇÃO PERIÓDICA AUTOMÁTICA EM SEGUNDO PLANO (A cada 30 segundos)
+  setInterval(() => {
+    carregarPlantas();
+  }, 30000);
+>>>>>>> Stashed changes
 });

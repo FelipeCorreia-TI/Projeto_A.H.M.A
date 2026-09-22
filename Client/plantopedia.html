@@ -141,13 +141,13 @@
         </p>
       </main>
 
-      <!-- Modal: adicionar planta -->
+      <!-- Modal: adicionar/editar planta -->
       <div class="pp-modal-overlay" id="ppFormOverlay" hidden>
         <div class="pp-modal">
           <button class="pp-modal-close" id="ppFormClose" aria-label="Fechar">
             &times;
           </button>
-          <h3>Adicionar planta</h3>
+          <h3 id="ppFormTitle">Adicionar planta</h3>
           <form id="ppForm">
             <label class="pp-photo-label" for="ppPhotoInput">
               Foto da planta
@@ -225,9 +225,11 @@
           <p class="pp-detail-scientific" id="ppDetailScientific"></p>
           <span class="pp-badge" id="ppDetailCategory"></span>
           <p class="pp-detail-info" id="ppDetailInfo"></p>
-          <button class="pp-btn-danger" id="ppDetailDelete">
-            Excluir planta
-          </button>
+
+          <div class="admin-actions" id="ppDetailAdminActions">
+            <button class="btn-editar" id="ppDetailEdit">Editar</button>
+            <button class="btn-excluir" id="ppDetailDelete">Excluir</button>
+          </div>
         </div>
       </div>
 
