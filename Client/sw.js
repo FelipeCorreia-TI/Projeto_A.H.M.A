@@ -1,4 +1,6 @@
 const CACHE_NAME = "A.H.M.A-v1";
+const API_CACHE_NAME = "A.H.M.A-supabase-v1";
+
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
@@ -31,10 +33,10 @@ self.addEventListener("install", (event) => {
         ASSETS_TO_CACHE.map((url) =>
           cache
             .add(url)
-            .catch((err) => console.warn("[PWA] Falhou ao cachear:", url, err)),
-        ),
+            .catch((err) => console.warn("[PWA] Falhou ao cachear:", url, err))
+        )
       );
-    }),
+    })
   );
 });
 
@@ -45,32 +47,64 @@ self.addEventListener("activate", (event) => {
       .then((cacheNames) => {
         return Promise.all(
           cacheNames.map((cache) => {
-            if (cache !== CACHE_NAME) {
+            // Remove caches de versões antigas do app ou da API
+            if (cache !== CACHE_NAME && cache !== API_CACHE_NAME) {
               console.log("[PWA] Removendo cache antigo:", cache);
               return caches.delete(cache);
             }
-          }),
+          })
         );
       })
-      .then(() => self.clients.claim()),
+      .then(() => self.clients.claim())
   );
 });
 
 self.addEventListener("fetch", (event) => {
-  if (event.request.url.includes("supabase.co")) return;
+  // ⚠️ IMPORTANTE: O Cache Storage só aceita requisições GET.
+  // Ignora métodos como POST, PUT, DELETE, PATCH, etc.
+  if (event.request.method !== "GET") {
+    return;
+  }
 
+  const url = new URL(event.request.url);
+
+  // 1. ESTRATÉGIA PARA O SUPABASE (Network First -> Fallback para Cache)
+  if (url.origin.includes("supabase.co")) {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.ok) {
+            const responseClone = networkResponse.clone();
+            caches.open(API_CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseClone);
+            });
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          console.warn("[PWA] Offline/Erro de Rede no Supabase. Buscando do cache...");
+          return caches.match(event.request);
+        })
+    );
+    return;
+  }
+
+  // 2. ESTRATÉGIA PARA ARQUIVOS ESTÁTICOS DO SITE (Stale-While-Revalidate)
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       const fetchPromise = fetch(event.request)
         .then((networkResponse) => {
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, networkResponse.clone());
-          });
+          if (networkResponse && networkResponse.ok) {
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseClone);
+            });
+          }
           return networkResponse;
         })
-        .catch(() => cachedResponse); // se offline, cai no cache
+        .catch(() => cachedResponse);
 
       return cachedResponse || fetchPromise;
-    }),
+    })
   );
 });

@@ -1,22 +1,38 @@
-//Aqui será criado a lógica por trás do SELECT para as informações do DB
+// Aqui será criado a lógica por trás do SELECT para as informações do DB
 import { _supabase } from "../config/supabase.js";
 
+const CACHE_PLANTAS_KEY = "ahma_cache_plantas";
+
 const PlantService = {
-  async listarPlantas() {
+  async listarPlantas(onCacheLoaded = null) {
+    // 1. CARREGAR DO CACHE INSTANTANEAMENTE (se houver)
+    const cacheLocal = localStorage.getItem(CACHE_PLANTAS_KEY);
+    if (cacheLocal) {
+      try {
+        const plantasCache = JSON.parse(cacheLocal);
+        if (typeof onCacheLoaded === "function") {
+          onCacheLoaded(plantasCache);
+        }
+      } catch (err) {
+        console.warn("Falha ao processar cache das plantas:", err);
+      }
+    }
+
+    // 2. BUSCAR DADOS ATUALIZADOS DO SUPABASE
     const { data, error } = await _supabase
       .from("especimes")
       .select(
         `
-            id_planta,
-            nome_popular,
-            nome_cientifico,
-            informacoes_adicionais,
-            foto_url,
-            categoria_especimes(
-                id_categoria,
-                nome_categoria
-            )
-            `,
+          id_planta,
+          nome_popular,
+          nome_cientifico,
+          informacoes_adicionais,
+          foto_url,
+          categoria_especimes(
+              id_categoria,
+              nome_categoria
+          )
+          `,
       )
       .order("id_planta", { ascending: false });
 
@@ -24,8 +40,34 @@ const PlantService = {
       console.error("Erro no supabase ao listar plantas:", error.message);
       throw error;
     }
+
+    // 3. ATUALIZAR O CACHE SEM AS IMAGENS EM BASE64 (Para economizar espaço)
+    if (data) {
+      try {
+        // Filtra os dados removendo strings de fotos em Base64 antes de salvar no localStorage
+        const dadosLevesParaCache = data.map((planta) => ({
+          ...planta,
+          foto_url:
+            planta.foto_url && planta.foto_url.startsWith("data:")
+              ? null
+              : planta.foto_url,
+        }));
+
+        localStorage.setItem(
+          CACHE_PLANTAS_KEY,
+          JSON.stringify(dadosLevesParaCache),
+        );
+      } catch (err) {
+        console.warn(
+          "[PWA] Não foi possível salvar o cache leve no localStorage:",
+          err,
+        );
+      }
+    }
+
     return data;
   },
+
   async listarCategorias() {
     const { data, error } = await _supabase
       .from("categoria_especimes")
@@ -34,6 +76,7 @@ const PlantService = {
     if (error) throw error;
     return data;
   },
+
   async adicionaPlanta(dadosPlanta) {
     const { data, error } = await _supabase
       .from("especimes")
@@ -53,6 +96,7 @@ const PlantService = {
     }
     return data;
   },
+
   async deletarPlanta(id) {
     const { error } = await _supabase
       .from("especimes")
@@ -64,6 +108,7 @@ const PlantService = {
     }
     return true;
   },
+
   async enviarFoto(arquivo) {
     if (!arquivo) return null;
 
@@ -84,21 +129,16 @@ const PlantService = {
 
     return publicUrlData.publicUrl;
   },
-  // No src/services/plant-service.js
 
   async deletarFotoStorage(fotoUrl) {
     if (!fotoUrl) return;
 
     try {
-      // 1. Remove qualquer parâmetro de busca no final da URL (ex: ?t=2026-08-17...)
       const urlLimpa = fotoUrl.split("?")[0];
-
-      // 2. Extrai apenas o nome exato do arquivo após a última barra '/'
       const nomeArquivo = urlLimpa.substring(urlLimpa.lastIndexOf("/") + 1);
 
       if (!nomeArquivo) return;
 
-      // 3. Executa a remoção no bucket correto
       const { data, error } = await _supabase.storage
         .from("plantas-fotos")
         .remove([nomeArquivo]);
@@ -113,4 +153,5 @@ const PlantService = {
     }
   },
 };
+
 export { PlantService };
