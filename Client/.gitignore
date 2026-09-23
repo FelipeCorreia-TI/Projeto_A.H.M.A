@@ -142,5 +142,5 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
 
-images-backup
-scripts
+assets/images-backup/
+scripts/
