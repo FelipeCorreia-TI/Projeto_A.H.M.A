@@ -263,3 +263,68 @@
   font-size: 0.9rem;
   color: #718096;
 }
+
+/* Container principal da página */
+#app-container, .monitoring-container {
+  width: 100%;
+  max-width: 100vw;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  /* 1. Empilha o Cabeçalho do Dashboard */
+  .monitoring-header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .header-titles {
+    width: 100%;
+  }
+
+  .header-titles h1 {
+    font-size: 1.5rem;
+    line-height: 1.2;
+    word-break: break-word;
+    margin: 4px 0;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  /* 2. Cards de Métricas em 1 Coluna no Celular */
+  .metrics-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .metric-card {
+    width: 100%;
+  }
+
+  /* 3. Ajuste da seção do Gráfico e Painéis */
+  .dashboard-body {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+  }
+
+  .chart-section {
+    width: 100%;
+  }
+
+  .chart-placeholder {
+    height: 250px !important;
+    width: 100% !important;
+  }
+}

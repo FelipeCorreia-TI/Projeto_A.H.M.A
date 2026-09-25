@@ -1,7 +1,4 @@
-/* ==========================================================================
-   HEADER - Ação da Direita (Sair / Voltar / Login)
-   ========================================================================== */
-
+/* Mantenha o estilo base de desktop */
 .top-header {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
@@ -25,7 +22,6 @@
     object-fit: contain;
 }
 
-/* Compartilha a mesma posição e alinhamento independente da página */
 #login-content,
 #btn-voltar,
 #btn-logout,
@@ -46,6 +42,33 @@
     height: 1.2rem;
     width: auto;
     display: block;
+}
+
+/* ==========================================================================
+   Ajuste Responsivo para Celulares (Até 768px)
+   ========================================================================== */
+@media (max-width: 768px) {
+    .top-header {
+        padding: 0.5rem 0.75rem;
+        gap: 6px;
+    }
+
+    .banner-img {
+        height: 28px; /* Reduz a logo no mobile para caber os 3 itens */
+    }
+
+    .botao-sidebar,
+    #login-content,
+    #btn-voltar,
+    #btn-logout,
+    .header-action-btn {
+        font-size: 0.82rem;
+        white-space: nowrap;
+    }
+
+    #icon-user {
+        height: 1rem;
+    }
 }
 
 @media (min-width: 768px) {
