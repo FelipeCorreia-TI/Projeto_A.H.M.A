@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Horta Dois | Monitoramento do Solo - Plataforma A.H.M.A</title>
+    <title>Monitoramento do Solo - Plataforma A.H.M.A</title>
     <link
       rel="shortcut icon"
       href="../assets/icons/IconTransparente.ico"
@@ -14,6 +14,9 @@
     <link rel="stylesheet" href="../assets/css/pages/horta_detalhes.css" />
     <link rel="manifest" href="../manifest.json" />
     <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png" />
+    
+    <!-- Biblioteca Chart.js para o gráfico de histórico -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
     <aside class="sidebar" id="sidebar">
@@ -57,7 +60,7 @@
         <header class="monitoring-header">
           <div class="header-titles">
             <span class="subtitle-tag">MONITORAMENTO DO SOLO</span>
-            <h1>Horta dois</h1>
+            <h1>Carregando horta...</h1>
             <p>Acompanhe as leituras de umidade do solo coletadas nesta horta.</p>
           </div>
           <div class="header-actions">
@@ -103,7 +106,11 @@
               </div>
               <span class="readings-badge">0 leituras</span>
             </div>
-            <canvas id="graficoUmidade" style="width: 100%; max-height: 280px;"></canvas>
+            
+            <!-- Canvas onde o Chart.js vai desenhar o gráfico -->
+            <div class="chart-placeholder" style="position: relative; height: 300px; width: 100%;">
+              <canvas id="graficoUmidade"></canvas>
+            </div>
           </div>
 
           <aside class="info-sidebar">
@@ -167,14 +174,12 @@
         </div>
       </footer>
     </div>
+
     <script src="../src/components/menu-hamburger.js"></script>
     <script type="module">
       import { protegerRota } from "../src/config/auth-guard.js";
       protegerRota();
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="module" src="../src/pages/horta_detalhes.js"></script>
-  </body>
-</html>
   </body>
 </html>
