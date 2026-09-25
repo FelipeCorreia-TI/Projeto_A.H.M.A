@@ -7,7 +7,7 @@ O Projeto A.H.M.A é uma aplicação web estática para gerenciamento de hortas,
 
 **Acessos do projeto:** 
 
-[![Acessar o Aplicativo](https://img.shields.io/badge/ACESSAR_O_APLICATIVO-007acc?style=for-the-badge)](https://felipecorreia-ti.github.io/Projeto_AHMA/Client)
+[![Acessar o Aplicativo](https://img.shields.io/badge/ACESSAR_O_APLICATIVO-007acc?style=for-the-badge)](https://felipecorreia-ti.github.io/Projeto_A.H.M.A/Client)
 [![Acessar o Aplicativo](https://img.shields.io/badge/ACESSAR_A_DOCUMENTAÇÃO---?style=for-the-badge)](https://ahma-docs.lovable.app/)
 
 ## Sumário
