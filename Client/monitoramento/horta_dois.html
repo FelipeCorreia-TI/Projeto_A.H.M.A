@@ -103,9 +103,7 @@
               </div>
               <span class="readings-badge">0 leituras</span>
             </div>
-            <div class="chart-placeholder">
-              <span>Percentual de umidade ao longo do tempo</span>
-            </div>
+            <canvas id="graficoUmidade" style="width: 100%; max-height: 280px;"></canvas>
           </div>
 
           <aside class="info-sidebar">
@@ -169,11 +167,14 @@
         </div>
       </footer>
     </div>
-
     <script src="../src/components/menu-hamburger.js"></script>
     <script type="module">
       import { protegerRota } from "../src/config/auth-guard.js";
       protegerRota();
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="module" src="../src/pages/horta_detalhes.js"></script>
+  </body>
+</html>
   </body>
 </html>
