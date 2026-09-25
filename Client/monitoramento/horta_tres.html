@@ -3,22 +3,26 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Plataforma A.H.M.A</title>
+    <title>Monitoramento do Solo - Plataforma A.H.M.A</title>
     <link
       rel="shortcut icon"
       href="../assets/icons/IconTransparente.ico"
       type="image/x-icon"
     />
-    <link rel="stylesheet" href="../assets/css/style.min.css">
-    <link rel="stylesheet" href="../assets/css/animations.min.css">
+    <link rel="stylesheet" href="../assets/css/style.min.css" />
+    <link rel="stylesheet" href="../assets/css/animations.min.css" />
+    <link rel="stylesheet" href="../assets/css/pages/horta_detalhes.css" />
     <link rel="manifest" href="../manifest.json" />
     <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png" />
+    
+    <!-- Biblioteca Chart.js para o gráfico de histórico -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
     <aside class="sidebar" id="sidebar">
       <ul class="menu-list">
-        <li><a href="../hub.html" class="active">Início</a></li>
-        <li><a href="../sensores.html">Monitoramento do Solo</a></li>
+        <li><a href="../hub.html">Início</a></li>
+        <li><a href="../sensores.html" class="active">Monitoramento do Solo</a></li>
         <li><a href="../plantopedia.html">Plantopédia</a></li>
       </ul>
     </aside>
@@ -42,35 +46,140 @@
           </a>
         </div>
 
-        <a href="../sensores.html" id="login-content"
-          ><img
+        <a href="../sensores.html" id="login-content">
+          <img
             id="icon-user"
             src="../assets/icons/icons8-voltar-24.png"
             alt="icon-usuario"
-          />Voltar</a
-        >
+          />Voltar
+        </a>
       </header>
 
-      <main id="conteudo-principal"></main>
+      <main id="conteudo-principal" class="monitoring-container">
+        <!-- Cabeçalho do Dashboard -->
+        <header class="monitoring-header">
+          <div class="header-titles">
+            <span class="subtitle-tag">MONITORAMENTO DO SOLO</span>
+            <h1>Carregando horta...</h1>
+            <p>Acompanhe as leituras de umidade do solo coletadas nesta horta.</p>
+          </div>
+          <div class="header-actions">
+            <span class="badge-status">Sem configuração</span>
+            <button class="btn-refresh" id="btnAtualizar">🔄 Atualizar</button>
+          </div>
+        </header>
+
+        <!-- Indicadores / Cards de Status -->
+        <section class="metrics-grid">
+          <div class="metric-card">
+            <h3>UMIDADE ATUAL</h3>
+            <p class="metric-value">—</p>
+            <span class="metric-subtext">Aguardando leitura</span>
+          </div>
+
+          <div class="metric-card">
+            <h3>CONDIÇÃO DO SOLO</h3>
+            <p class="metric-value">—</p>
+            <span class="metric-subtext">Faixa interpretada pelo sensor</span>
+          </div>
+
+          <div class="metric-card">
+            <h3>ÚLTIMA ATUALIZAÇÃO</h3>
+            <p class="metric-value">—</p>
+            <span class="metric-subtext">Nenhuma leitura recebida</span>
+          </div>
+
+          <div class="metric-card highlight">
+            <h3>SENSOR ASSOCIADO</h3>
+            <p class="metric-value status-unassigned">Não associado</p>
+            <span class="metric-subtext">Aguardando configuração</span>
+          </div>
+        </section>
+
+        <!-- Seção do Gráfico e Painéis Laterais -->
+        <section class="dashboard-body">
+          <div class="chart-section">
+            <div class="chart-header">
+              <div>
+                <h2>Histórico de umidade</h2>
+                <p>Últimas leituras registradas no Supabase.</p>
+              </div>
+              <span class="readings-badge">0 leituras</span>
+            </div>
+            
+            <!-- Canvas onde o Chart.js vai desenhar o gráfico -->
+            <div class="chart-placeholder" style="position: relative; height: 300px; width: 100%;">
+              <canvas id="graficoUmidade"></canvas>
+            </div>
+          </div>
+
+          <aside class="info-sidebar">
+            <!-- Faixas de Referência -->
+            <div class="info-card">
+              <h3>Faixas de referência</h3>
+              <p class="info-subtitle">Interpretação usada pelo sketch do Arduino.</p>
+              <ul class="reference-list">
+                <li>
+                  <span class="dot dot-very-dry"></span> Muito seco 
+                  <span class="range">0%—18%</span>
+                </li>
+                <li>
+                  <span class="dot dot-dry"></span> Seco 
+                  <span class="range">17%—33%</span>
+                </li>
+                <li>
+                  <span class="dot dot-low"></span> Umidade baixa 
+                  <span class="range">34%—50%</span>
+                </li>
+                <li>
+                  <span class="dot dot-ideal"></span> Ideal 
+                  <span class="range">51%—67%</span>
+                </li>
+                <li>
+                  <span class="dot dot-wet"></span> Úmido 
+                  <span class="range">68%—83%</span>
+                </li>
+                <li>
+                  <span class="dot dot-very-wet"></span> Muito úmido 
+                  <span class="range">84%—100%</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Como Interpretar -->
+            <div class="info-card">
+              <h3>Como interpretar</h3>
+              <p class="info-subtitle">Use a leitura para orientar o cuidado da horta.</p>
+              <div class="guide-box">
+                Assim que o Arduino enviar uma leitura, a plataforma mostrará a condição do solo e a orientação correspondente.
+              </div>
+            </div>
+          </aside>
+        </section>
+
+        <!-- Banner de Horta Não Configurada -->
+        <section class="config-banner">
+          <div class="banner-icon">🌱</div>
+          <h3>Horta ainda não configurada</h3>
+          <p>Cadastre esta horta na tabela horta do Supabase para começar a associar sensores e acompanhar o solo.</p>
+        </section>
+      </main>
 
       <footer class="row-footer" id="contato">
         <div class="footer-content">
-          <p>
-            &copy; 2026 <strong>A.H.M.A</strong>. Todos os direitos reservados.
-          </p>
+          <p>&copy; 2026 <strong>A.H.M.A</strong>. Todos os direitos reservados.</p>
           <p class="devs-credits">
-            Desenvolvido por <strong>Felipe Correia</strong>,
-            <strong>Yago Montouro</strong> e <strong>Pedro Hiago</strong>.
+            Desenvolvido por <strong>Felipe Correia</strong>, <strong>Yago Montouro</strong> e <strong>Pedro Hiago</strong>.
           </p>
         </div>
       </footer>
     </div>
+
     <script src="../src/components/menu-hamburger.js"></script>
     <script type="module">
-      import { protegerRota } from "./src/config/auth-guard.js";
-
-      // Executa antes de carregar a interface da página
+      import { protegerRota } from "../src/config/auth-guard.js";
       protegerRota();
     </script>
+    <script type="module" src="../src/pages/horta_detalhes.js"></script>
   </body>
 </html>
