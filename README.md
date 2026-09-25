@@ -368,7 +368,7 @@ As operações dependem das políticas de acesso do Supabase. Um erro no serviç
 
 ---
 
-## Monitoramento das hortas (Em desenvolvimento 🛑)
+## Monitoramento das hortas
 
 O módulo `Client/src/pages/monitoramento.js`:
 
