@@ -1,0 +1,265 @@
+.monitoring-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+  color: #2d3748;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Cabeçalho */
+.monitoring-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+}
+
+.subtitle-tag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #2e7d32;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.monitoring-header h1 {
+  font-size: 2rem;
+  margin: 0.2rem 0;
+  color: #1a202c;
+}
+
+.monitoring-header p {
+  color: #718096;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.badge-status {
+  background-color: #fefcbf;
+  color: #744210;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.btn-refresh {
+  background-color: #1a365d;
+  color: #ffffff;
+  border: none;
+  padding: 0.4rem 0.9rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-refresh:hover {
+  background-color: #2c5282;
+}
+
+/* Grid de Métricas */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.metric-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.metric-card h3 {
+  font-size: 0.75rem;
+  color: #718096;
+  margin: 0 0 0.5rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.metric-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem 0;
+  color: #2d3748;
+}
+
+.metric-subtext {
+  font-size: 0.8rem;
+  color: #a0aec0;
+}
+
+.status-unassigned {
+  font-size: 1.4rem;
+  color: #2d3748;
+}
+
+/* Seção Central (Gráfico e Sidebar) */
+.dashboard-body {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 868px) {
+  .dashboard-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chart-section {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.chart-header h2 {
+  font-size: 1.1rem;
+  margin: 0 0 0.25rem 0;
+}
+
+.chart-header p {
+  font-size: 0.85rem;
+  color: #718096;
+  margin: 0;
+}
+
+.readings-badge {
+  background-color: #edf2f7;
+  color: #4a5568;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.chart-placeholder {
+  flex: 1;
+  min-height: 220px;
+  border: 1px dashed #cbd5e0;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a0aec0;
+  font-size: 0.9rem;
+}
+
+/* Sidebar de Informações */
+.info-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.info-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1.25rem;
+}
+
+.info-card h3 {
+  font-size: 1rem;
+  margin: 0 0 0.25rem 0;
+}
+
+.info-subtitle {
+  font-size: 0.8rem;
+  color: #718096;
+  margin: 0 0 1rem 0;
+}
+
+.reference-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.reference-list li {
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+  color: #4a5568;
+}
+
+.range {
+  margin-left: auto;
+  color: #a0aec0;
+  font-size: 0.8rem;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 0.5rem;
+  display: inline-block;
+}
+
+.dot-very-dry { background-color: #e53e3e; }
+.dot-dry { background-color: #dd6b20; }
+.dot-low { background-color: #d69e2e; }
+.dot-ideal { background-color: #38a169; }
+.dot-wet { background-color: #3182ce; }
+.dot-very-wet { background-color: #2b6cb0; }
+
+.guide-box {
+  background-color: #f7fafc;
+  border-left: 3px solid #319795;
+  padding: 0.75rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: #4a5568;
+  line-height: 1.4;
+}
+
+/* Banner Inferior */
+.config-banner {
+  background: #ffffff;
+  border: 1px dashed #cbd5e0;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+}
+
+.banner-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.config-banner h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  color: #2d3748;
+}
+
+.config-banner p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #718096;
+}
