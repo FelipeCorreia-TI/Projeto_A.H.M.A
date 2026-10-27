@@ -149,6 +149,7 @@
           </button>
           <h3 id="ppFormTitle">Adicionar planta</h3>
           <form id="ppForm">
+            <input type="hidden" id="ppId" />
             <label class="pp-photo-label" for="ppPhotoInput">
               Foto da planta
               <div class="pp-photo-upload" id="ppPhotoUpload">
@@ -225,10 +226,23 @@
           <p class="pp-detail-scientific" id="ppDetailScientific"></p>
           <span class="pp-badge" id="ppDetailCategory"></span>
           <p class="pp-detail-info" id="ppDetailInfo"></p>
+<<<<<<< Updated upstream
 
           <div class="admin-actions" id="ppDetailAdminActions">
             <button class="btn-editar" id="ppDetailEdit">Editar</button>
             <button class="btn-excluir" id="ppDetailDelete">Excluir</button>
+=======
+          <div
+            class="pp-detail-actions"
+            style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center"
+          >
+            <button type="button" class="pp-btn-secondary" id="ppDetailEdit">
+              Editar planta
+            </button>
+            <button type="button" class="pp-btn-danger" id="ppDetailDelete">
+              Excluir planta
+            </button>
+>>>>>>> Stashed changes
           </div>
         </div>
       </div>
