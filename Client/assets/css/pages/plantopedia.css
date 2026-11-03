@@ -1,7 +1,7 @@
 /* ==========================================================================
    PAGE: PLANTOPÉDIA
    Estilos exclusivos da tela de catálogo de plantas (busca, cards,
-   modais de detalhe/cadastro).
+   modais de detalhe/cadastro/edição).
    ========================================================================== */
 
 .pp-hero {
@@ -290,6 +290,20 @@
 
 .pp-btn-danger:hover {
     background-color: var(--color-danger-bg-hover);
+}
+
+/* Botões Editar / Excluir lado a lado no modal de detalhes */
+.pp-detail-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.pp-detail-actions .pp-btn-primary,
+.pp-detail-actions .pp-btn-danger {
+    flex: 1;
+    width: auto;
+    margin-top: 0;
 }
 
 .pp-detail {
