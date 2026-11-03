@@ -15,6 +15,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const ppFormClose = document.getElementById("ppFormClose");
   const ppFormCancel = document.getElementById("ppFormCancel");
   const ppForm = document.getElementById("ppForm");
+  const ppFormTitle = document.getElementById("ppFormTitle");
   const ppBtnSubmit = document.getElementById("ppBtnSubmit");
   const ppCategorySelect = document.getElementById("ppCategory");
 
@@ -26,11 +27,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Detalhes
   const ppDetailOverlay = document.getElementById("ppDetailOverlay");
   const ppDetailClose = document.getElementById("ppDetailClose");
+  const ppDetailEdit = document.getElementById("ppDetailEdit");
   const ppDetailDelete = document.getElementById("ppDetailDelete");
 
   let listaPlantas = [];
   let listaCategorias = [];
   let plantaSelecionadaId = null;
+  let plantaSelecionada = null; // planta aberta no modal de detalhes
+  let plantaEmEdicao = null; // planta sendo editada no formulário (null = cadastro novo)
   let fotoBase64 = null;
   let arquivoFotoSelecionado = null;
   let nivelAcessoUsuario = "USER";
@@ -124,7 +128,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const file = e.target.files[0];
       if (!file) return;
 
-      arquivoFotoSelecionado = file; // <- Adicionar esta linha
+      arquivoFotoSelecionado = file;
 
       const reader = new FileReader();
       reader.onload = (event) => {
@@ -141,6 +145,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     ppForm.reset();
     fotoBase64 = null;
     arquivoFotoSelecionado = null;
+    plantaEmEdicao = null;
+
+    if (ppFormTitle) ppFormTitle.textContent = "Adicionar planta";
+    if (ppBtnSubmit) ppBtnSubmit.textContent = "Salvar planta";
+
     if (ppPhotoPreview) {
       ppPhotoPreview.src = "";
       ppPhotoPreview.setAttribute("hidden", "true");
@@ -148,6 +157,34 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (ppPhotoPlaceholder) {
       ppPhotoPlaceholder.style.display = "block";
     }
+  }
+
+  // Abre o formulário já preenchido com os dados da planta
+  function abrirEdicao(planta) {
+    resetarFormulario();
+    plantaEmEdicao = planta;
+
+    if (ppFormTitle) ppFormTitle.textContent = "Editar planta";
+    if (ppBtnSubmit) ppBtnSubmit.textContent = "Salvar alterações";
+
+    document.getElementById("ppName").value = planta.nome_popular || "";
+    document.getElementById("ppScientific").value =
+      planta.nome_cientifico || "";
+    document.getElementById("ppInfo").value =
+      planta.informacoes_adicionais || "";
+
+    if (ppCategorySelect && planta.id_categoria != null) {
+      ppCategorySelect.value = String(planta.id_categoria);
+    }
+
+    if (planta.foto_url && ppPhotoPreview) {
+      ppPhotoPreview.src = planta.foto_url;
+      ppPhotoPreview.removeAttribute("hidden");
+      if (ppPhotoPlaceholder) ppPhotoPlaceholder.style.display = "none";
+    }
+
+    // Fecha o modal de detalhes e, ao terminar, abre o formulário
+    fecharModal(ppDetailOverlay, () => abrirModal(ppFormOverlay));
   }
 
   if (ppBtnAdd) {
@@ -171,17 +208,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   const fecharModalDetalhes = () => fecharModal(ppDetailOverlay);
   if (ppDetailClose) ppDetailClose.onclick = fecharModalDetalhes;
 
-  // 5. CARREGAR PLANTAS COM CACHE INSTANTÂNEO + ATUALIZAÇÃO EM SEGUNDO PLANO
+  // CARREGAR PLANTAS COM CACHE INSTANTÂNEO + ATUALIZAÇÃO EM SEGUNDO PLANO
   async function carregarPlantas() {
     try {
       const data = await PlantService.listarPlantas((plantasDoCache) => {
-        // Exibe o cache na tela imediatamente se ele existir
         listaPlantas = plantasDoCache;
         renderizarPlantas(listaPlantas);
         console.log("⚡ Plantopédia exibida instantaneamente via cache local.");
       });
 
-      // Atualiza a tela com os dados atualizados do Supabase
       listaPlantas = data || [];
       renderizarPlantas(listaPlantas);
       console.log("🔄 Plantopédia sincronizada com o Supabase.");
@@ -211,7 +246,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       card.className = "pp-card";
       card.style.setProperty("--i", indice);
 
-      // Renderiza a imagem envolvida por um wrapper com transição suave
       const fotoHtml = planta.foto_url
         ? `<div class="pp-photo-wrapper">
              <img src="${planta.foto_url}" 
@@ -256,6 +290,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   function abrirDetalhes(planta) {
     plantaSelecionadaId = planta.id_planta;
+    plantaSelecionada = planta;
+
     document.getElementById("ppDetailName").textContent =
       planta.nome_popular || "";
     document.getElementById("ppDetailScientific").textContent =
@@ -278,15 +314,26 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (placeholderDetail) placeholderDetail.hidden = false;
     }
 
+    const isAdmin = nivelAcessoUsuario !== "USER";
+
+    if (ppDetailEdit) {
+      ppDetailEdit.style.display = isAdmin ? "block" : "none";
+    }
     if (ppDetailDelete) {
-      if (nivelAcessoUsuario === "USER") {
-        ppDetailDelete.style.display = "none";
-      } else {
-        ppDetailDelete.style.display = "block";
-      }
+      ppDetailDelete.style.display = isAdmin ? "block" : "none";
     }
 
     abrirModal(ppDetailOverlay);
+  }
+
+  if (ppDetailEdit) {
+    ppDetailEdit.onclick = () => {
+      if (nivelAcessoUsuario === "USER") {
+        alert("Ação não permitida para seu nível de acesso.");
+        return;
+      }
+      if (plantaSelecionada) abrirEdicao(plantaSelecionada);
+    };
   }
 
   if (ppForm) {
@@ -314,6 +361,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         return;
       }
 
+      const editando = !!plantaEmEdicao;
+
       if (ppBtnSubmit) {
         ppBtnSubmit.disabled = true;
         ppBtnSubmit.textContent = "Salvando...";
@@ -321,14 +370,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
       try {
-        // --- INÍCIO DA ALTERAÇÃO (Upload para o Storage) ---
-        let foto_url = null;
+        // Na edição, mantém a foto atual se nenhuma nova foi escolhida
+        let foto_url = editando ? plantaEmEdicao.foto_url || null : null;
 
-        // Se o usuário selecionou uma foto pelo input de arquivo, faz o upload para o bucket
         if (arquivoFotoSelecionado) {
           foto_url = await PlantService.enviarFoto(arquivoFotoSelecionado);
-        } else if (fotoBase64) {
-          // Fallback caso ainda haja algo no fotoBase64
+        } else if (!editando && fotoBase64) {
+          // Fallback apenas para cadastro novo
           foto_url = fotoBase64;
         }
 
@@ -337,21 +385,30 @@ document.addEventListener("DOMContentLoaded", async () => {
           nome_cientifico: nome_cientifico || null,
           id_categoria,
           informacoes_adicionais: informacoes_adicionais || null,
-          foto_url: foto_url, // Guarda a URL do Supabase Storage
+          foto_url,
         };
 
-        await PlantService.adicionaPlanta(payload);
-        // --- FIM DA ALTERAÇÃO ---
+        if (editando) {
+          await PlantService.atualizarPlanta(
+            plantaEmEdicao.id_planta,
+            payload,
+            plantaEmEdicao.foto_url,
+          );
+        } else {
+          await PlantService.adicionaPlanta(payload);
+        }
 
         fecharModalCadastro();
         await carregarPlantas();
       } catch (err) {
         console.error("Erro ao salvar planta:", err);
-        alert("Erro ao salvar planta no banco, você está offline: " + err.message);
+        alert("Erro ao salvar planta, você está offline: " + err.message);
       } finally {
         if (ppBtnSubmit) {
           ppBtnSubmit.disabled = false;
-          ppBtnSubmit.textContent = "Salvar planta";
+          ppBtnSubmit.textContent = editando
+            ? "Salvar alterações"
+            : "Salvar planta";
           ppBtnSubmit.classList.remove("ahma-carregando");
         }
       }
@@ -386,7 +443,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   await carregarCategorias();
   await carregarPlantas();
 
-  // ATUALIZAÇÃO PERIÓDICA AUTOMÁTICA EM SEGUNDO PLANO (A cada 30 segundos)
+  // ATUALIZAÇÃO PERIÓDICA AUTOMÁTICA EM SEGUNDO PLANO (a cada 30 segundos)
   setInterval(() => {
     carregarPlantas();
   }, 30000);
