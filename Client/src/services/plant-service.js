@@ -28,6 +28,7 @@ const PlantService = {
           nome_cientifico,
           informacoes_adicionais,
           foto_url,
+          id_categoria,
           categoria_especimes(
               id_categoria,
               nome_categoria
@@ -44,7 +45,6 @@ const PlantService = {
     // 3. ATUALIZAR O CACHE SEM AS IMAGENS EM BASE64 (Para economizar espaço)
     if (data) {
       try {
-        // Filtra os dados removendo strings de fotos em Base64 antes de salvar no localStorage
         const dadosLevesParaCache = data.map((planta) => ({
           ...planta,
           foto_url:
@@ -97,6 +97,45 @@ const PlantService = {
     return data;
   },
 
+  // NOVO: atualiza uma planta existente.
+  // fotoAntigaUrl (opcional): se a foto mudou, a antiga é removida do Storage.
+  async atualizarPlanta(id, dadosPlanta, fotoAntigaUrl = null) {
+    const { data, error } = await _supabase
+      .from("especimes")
+      .update({
+        nome_popular: dadosPlanta.nome_popular,
+        nome_cientifico: dadosPlanta.nome_cientifico,
+        informacoes_adicionais: dadosPlanta.informacoes_adicionais,
+        id_categoria: dadosPlanta.id_categoria,
+        foto_url: dadosPlanta.foto_url || null,
+      })
+      .eq("id_planta", id)
+      .select();
+
+    if (error) {
+      console.error("Erro ao atualizar planta no Supabase:", error.message);
+      throw error;
+    }
+
+    // Se o update não afetou nenhuma linha, quase sempre é falta de policy (RLS)
+    if (!data || data.length === 0) {
+      throw new Error(
+        "Nenhuma planta foi atualizada. Verifique a policy de UPDATE no Supabase.",
+      );
+    }
+
+    // Remove a foto antiga do Storage só depois do update dar certo
+    if (
+      fotoAntigaUrl &&
+      fotoAntigaUrl !== dadosPlanta.foto_url &&
+      !fotoAntigaUrl.startsWith("data:")
+    ) {
+      await this.deletarFotoStorage(fotoAntigaUrl);
+    }
+
+    return data;
+  },
+
   async deletarPlanta(id) {
     const { error } = await _supabase
       .from("especimes")
@@ -104,7 +143,7 @@ const PlantService = {
       .eq("id_planta", id);
     if (error) {
       console.error("Erro ao deletar a planta:", error.message);
-      throw true;
+      throw error;
     }
     return true;
   },

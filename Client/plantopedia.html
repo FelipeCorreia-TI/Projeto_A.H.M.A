@@ -3,7 +3,6 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Plataforma A.H.M.A - Plantopédia</title>
 
     <!-- 🛡️ Proteção de rota no topo do HEAD -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -63,9 +62,9 @@
       href="assets/icons/IconTransparente.ico"
       type="image/x-icon"
     />
-   
-    <link rel="stylesheet" href="assets/css/style.min.css">
-    <link rel="stylesheet" href="assets/css/animations.min.css">
+
+    <link rel="stylesheet" href="assets/css/style.min.css" />
+    <link rel="stylesheet" href="assets/css/animations.min.css" />
     <link rel="stylesheet" href="assets/css/pages/plantopedia.css" />
     <link rel="manifest" href="./manifest.json" />
     <link rel="apple-touch-icon" href="./assets/icons/apple-touch-icon.png" />
@@ -143,13 +142,13 @@
         </p>
       </main>
 
-      <!-- Modal: adicionar planta -->
+      <!-- Modal: adicionar / editar planta -->
       <div class="pp-modal-overlay" id="ppFormOverlay" hidden>
         <div class="pp-modal">
           <button class="pp-modal-close" id="ppFormClose" aria-label="Fechar">
             &times;
           </button>
-          <h3>Adicionar planta</h3>
+          <h3 id="ppFormTitle">Adicionar planta</h3>
           <form id="ppForm">
             <label class="pp-photo-label" for="ppPhotoInput">
               Foto da planta
@@ -227,9 +226,15 @@
           <p class="pp-detail-scientific" id="ppDetailScientific"></p>
           <span class="pp-badge" id="ppDetailCategory"></span>
           <p class="pp-detail-info" id="ppDetailInfo"></p>
-          <button class="pp-btn-danger" id="ppDetailDelete">
-            Excluir planta
-          </button>
+
+          <div class="pp-detail-actions">
+            <button type="button" class="pp-btn-primary" id="ppDetailEdit">
+              Editar planta
+            </button>
+            <button type="button" class="pp-btn-danger" id="ppDetailDelete">
+              Excluir planta
+            </button>
+          </div>
         </div>
       </div>
 
