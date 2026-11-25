@@ -47,28 +47,24 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // 2. MOSTRAR/OCULTAR SENHA - LOGIN
-  const btnToggle = document.getElementById("toggle-password");
-  const passInput = document.getElementById("password");
-  if (btnToggle && passInput) {
-    btnToggle.onclick = (e) => {
-      e.preventDefault();
-      const isPass = passInput.type === "password";
-      passInput.type = isPass ? "text" : "password";
-      btnToggle.textContent = isPass ? "🙈" : "👁";
-    };
+
+  function setupPasswordToggle(buttonId, inputId) {
+    const btn = document.getElementById(buttonId);
+    const input = document.getElementById(inputId);
+
+    if (btn && input) {
+      btn.addEventListener("click", () => {
+        const isPass = input.type === "password";
+        input.type = isPass ? "text" : "password";
+        btn.textContent = isPass ? "🙈" : "👁";
+        input.focus(); // Mantém o foco no input instantaneamente
+      });
+    }
   }
 
-  // 3. MOSTRAR/OCULTAR SENHA - CADASTRO
-  const btnToggleReg = document.getElementById("toggle-reg-password");
-  const regPassInput = document.getElementById("reg-password");
-  if (btnToggleReg && regPassInput) {
-    btnToggleReg.onclick = (e) => {
-      e.preventDefault();
-      const isPass = regPassInput.type === "password";
-      regPassInput.type = isPass ? "text" : "password";
-      btnToggleReg.textContent = isPass ? "🙈" : "👁";
-    };
-  }
+  // Ativa para o Login e para o Cadastro
+  setupPasswordToggle("toggle-password", "password");
+  setupPasswordToggle("toggle-reg-password", "reg-password");
 
   // Função auxiliar: mostra erro com pequeno "shake" (usada no login e no cadastro)
   function exibirErroComShake(elemento, mensagem) {
