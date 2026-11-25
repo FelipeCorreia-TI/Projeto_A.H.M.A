@@ -1,4 +1,4 @@
-const CACHE_NAME = "A.H.M.A-v1";
+const CACHE_NAME = "A.H.M.A-v2";
 const API_CACHE_NAME = "A.H.M.A-supabase-v1";
 
 const ASSETS_TO_CACHE = [
@@ -34,10 +34,10 @@ self.addEventListener("install", (event) => {
         ASSETS_TO_CACHE.map((url) =>
           cache
             .add(url)
-            .catch((err) => console.warn("[PWA] Falhou ao cachear:", url, err))
-        )
+            .catch((err) => console.warn("[PWA] Falhou ao cachear:", url, err)),
+        ),
       );
-    })
+    }),
   );
 });
 
@@ -48,28 +48,25 @@ self.addEventListener("activate", (event) => {
       .then((cacheNames) => {
         return Promise.all(
           cacheNames.map((cache) => {
-            // Remove caches de versões antigas do app ou da API
             if (cache !== CACHE_NAME && cache !== API_CACHE_NAME) {
               console.log("[PWA] Removendo cache antigo:", cache);
               return caches.delete(cache);
             }
-          })
+          }),
         );
       })
-      .then(() => self.clients.claim())
+      .then(() => self.clients.claim()),
   );
 });
 
 self.addEventListener("fetch", (event) => {
-  // ⚠️ IMPORTANTE: O Cache Storage só aceita requisições GET.
-  // Ignora métodos como POST, PUT, DELETE, PATCH, etc.
   if (event.request.method !== "GET") {
     return;
   }
 
   const url = new URL(event.request.url);
 
-  // 1. ESTRATÉGIA PARA O SUPABASE (Network First -> Fallback para Cache)
+  // 1. ESTRATÉGIA PARA O SUPABASE (Network First -> Fallback para Cache offline)
   if (url.origin.includes("supabase.co")) {
     event.respondWith(
       fetch(event.request)
@@ -83,17 +80,21 @@ self.addEventListener("fetch", (event) => {
           return networkResponse;
         })
         .catch(() => {
-          console.warn("[PWA] Offline/Erro de Rede no Supabase. Buscando do cache...");
           return caches.match(event.request);
-        })
+        }),
     );
     return;
   }
 
-  // 2. ESTRATÉGIA PARA ARQUIVOS ESTÁTICOS DO SITE (Stale-While-Revalidate)
+  // 2. ESTRATÉGIA PARA ARQUIVOS ESTÁTICOS (Cache First com salvamento dinâmico)
+  // Serve instantaneamente do cache sem disparar requisições repetidas à rede
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      const fetchPromise = fetch(event.request)
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      // Se não estiver no cache inicial, busca na rede e guarda para as próximas vezes
+      return fetch(event.request)
         .then((networkResponse) => {
           if (networkResponse && networkResponse.ok) {
             const responseClone = networkResponse.clone();
@@ -103,9 +104,9 @@ self.addEventListener("fetch", (event) => {
           }
           return networkResponse;
         })
-        .catch(() => cachedResponse);
-
-      return cachedResponse || fetchPromise;
-    })
+        .catch(() => {
+          // Fallback genérico offline se necessário
+        });
+    }),
   );
 });
