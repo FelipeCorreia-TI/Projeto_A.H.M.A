@@ -51,6 +51,7 @@ async function carregarDadosHorta() {
     if (errorHorta) throw errorHorta;
 
     // Elementos da Interface
+    const badgeStatus = document.querySelector(".badge-status");
     const elSensorAssoc = document.querySelector(".status-unassigned");
     const bannerConfig = document.querySelector(".config-banner");
     const elTituloHorta = document.querySelector(".header-titles h1");
