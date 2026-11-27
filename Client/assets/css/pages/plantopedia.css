@@ -66,6 +66,12 @@
     color: var(--color-text);
 }
 
+.pp-search input:focus {
+    outline: none !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
 .pp-search-icon {
     opacity: 0.6;
 }
